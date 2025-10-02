@@ -234,6 +234,11 @@
       return;
     }
 
+    debug('Applying analysis results:', analysisData.reviews.length, 'items');
+    debug('Current reviews in state:', state.reviews.size);
+
+    let matchedCount = 0;
+
     // Update state with analysis
     analysisData.reviews.forEach(analysis => {
       const review = state.reviews.get(analysis.id);
@@ -245,10 +250,14 @@
           topics: analysis.topics || []
         };
         state.reviews.set(analysis.id, review);
+        matchedCount++;
+        debug(`Matched analysis for review ${analysis.id}: ${analysis.sentiment}/${analysis.category}`);
+      } else {
+        debug(`No review found for analysis ID: ${analysis.id}`);
       }
     });
 
-    debug('Analysis applied to reviews');
+    debug(`Analysis applied: ${matchedCount} matched out of ${analysisData.reviews.length}`);
 
     // Inject visual labels
     injectReviewLabels();

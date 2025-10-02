@@ -214,15 +214,30 @@
       const editableDivs = modal.querySelectorAll('div[contenteditable="true"]');
       debug(`Found ${editableDivs.length} contenteditable divs in modal`);
       editableDivs.forEach((div, i) => {
-        debug(`Editable div ${i}:`, div.getAttribute('ng-model'), div.className);
+        debug(`Editable div ${i}:`, div.getAttribute('ng-model'), div.className, 'visible:', div.offsetParent !== null);
       });
     } else {
       debug('No .modal-dialog found in DOM');
     }
 
-    // Look for the modal contenteditable div (App Store Connect uses this instead of textarea)
-    const modalTextarea = document.querySelector('.modal-dialog div[contenteditable="true"]') ||
-                         document.querySelector('.modal-dialog div[ng-model="text"]');
+    // Find the VISIBLE contenteditable div (there are 2 - one disabled, one active)
+    const allEditableDivs = document.querySelectorAll('.modal-dialog div[contenteditable="true"]');
+    let modalTextarea = null;
+
+    // Find the visible one
+    for (const div of allEditableDivs) {
+      if (div.offsetParent !== null) {
+        modalTextarea = div;
+        debug('Found visible contenteditable div');
+        break;
+      }
+    }
+
+    // Fallback to first one if none are visible yet
+    if (!modalTextarea && allEditableDivs.length > 0) {
+      modalTextarea = allEditableDivs[allEditableDivs.length - 1]; // Try last one
+      debug('No visible div found, using last contenteditable div');
+    }
 
     if (modalTextarea) {
       debug('Before fill - innerHTML:', modalTextarea.innerHTML);
@@ -232,36 +247,30 @@
       // For now, use a dummy response
       const dummyResponse = `Thank you for your review! We appreciate your feedback about "${reviewData.title || 'our app'}". Your ${reviewData.rating}-star rating helps us improve our service.`;
 
-      // Method 1: Try to access Angular scope and update model directly
-      try {
-        const angularElement = angular.element(modalTextarea);
-        const scope = angularElement.scope();
-        if (scope) {
-          debug('Found Angular scope, updating ng-model directly');
-          scope.text = dummyResponse;
-          scope.$apply();
-          debug('Angular scope updated');
+      // Click on the element first to ensure it's active
+      modalTextarea.click();
+
+      // Small delay to let Angular activate the element
+      setTimeout(() => {
+        // Focus the element
+        modalTextarea.focus();
+
+        // Select all existing content and delete it
+        document.execCommand('selectAll', false, null);
+        document.execCommand('delete', false, null);
+
+        // Insert new text character by character to better simulate typing
+        for (let char of dummyResponse) {
+          document.execCommand('insertText', false, char);
         }
-      } catch (e) {
-        debug('Could not access Angular scope:', e.message);
-      }
 
-      // Method 2: Focus and use execCommand (simulates real typing)
-      modalTextarea.focus();
+        debug('After fill - innerHTML:', modalTextarea.innerHTML);
 
-      // Clear existing content first
-      document.execCommand('selectAll', false, null);
-      document.execCommand('delete', false, null);
-
-      // Insert new text
-      document.execCommand('insertText', false, dummyResponse);
-
-      debug('After fill - innerHTML:', modalTextarea.innerHTML);
-
-      // Trigger all events
-      modalTextarea.dispatchEvent(new Event('input', { bubbles: true }));
-      modalTextarea.dispatchEvent(new Event('change', { bubbles: true }));
-      modalTextarea.dispatchEvent(new Event('blur', { bubbles: true }));
+        // Trigger all events
+        modalTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+        modalTextarea.dispatchEvent(new Event('change', { bubbles: true }));
+        modalTextarea.dispatchEvent(new Event('blur', { bubbles: true }));
+      }, 100);
 
       // Add generate button
       addGenerateButton(modalTextarea, reviewData);
@@ -332,32 +341,28 @@
 
       // Update contenteditable div or textarea
       if (textarea.hasAttribute('contenteditable')) {
-        // Try to access Angular scope first
-        try {
-          const angularElement = angular.element(textarea);
-          const scope = angularElement.scope();
-          if (scope) {
-            scope.text = randomResponse;
-            scope.$apply();
-            debug('Angular scope updated with new response');
-          }
-        } catch (e) {
-          debug('Could not access Angular scope:', e.message);
-        }
-
-        // Use execCommand to simulate real typing
+        // Click and focus the element
+        textarea.click();
         textarea.focus();
+
+        // Select all and delete
         document.execCommand('selectAll', false, null);
         document.execCommand('delete', false, null);
-        document.execCommand('insertText', false, randomResponse);
+
+        // Insert text character by character
+        for (let char of randomResponse) {
+          document.execCommand('insertText', false, char);
+        }
+
+        // Trigger Angular's change detection
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        textarea.dispatchEvent(new Event('change', { bubbles: true }));
+        textarea.dispatchEvent(new Event('blur', { bubbles: true }));
       } else {
         textarea.value = randomResponse;
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        textarea.dispatchEvent(new Event('change', { bubbles: true }));
       }
-
-      // Trigger Angular's change detection
-      textarea.dispatchEvent(new Event('input', { bubbles: true }));
-      textarea.dispatchEvent(new Event('change', { bubbles: true }));
-      textarea.dispatchEvent(new Event('blur', { bubbles: true }));
 
       // Reset button
       btn.textContent = originalText;

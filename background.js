@@ -305,4 +305,4 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   });
 });
 
-console.log('ReviewCut background service worker loaded');
+console.log('Reviewllama background service worker loaded');

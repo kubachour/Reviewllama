@@ -145,6 +145,14 @@ document.addEventListener('DOMContentLoaded', function() {
         chrome.tabs.sendMessage(tab.id, {
           type: 'GET_STATS'
         }, (response) => {
+          // Check for connection error (content script not loaded)
+          if (chrome.runtime.lastError) {
+            console.log('Content script not loaded:', chrome.runtime.lastError.message);
+            totalReviews.textContent = '-';
+            unansweredReviews.textContent = '-';
+            return;
+          }
+
           if (response && response.success) {
             totalReviews.textContent = response.data.total || '0';
             unansweredReviews.textContent = response.data.unanswered || '0';

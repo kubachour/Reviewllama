@@ -225,19 +225,34 @@
                          document.querySelector('.modal-dialog div[ng-model="text"]');
 
     if (modalTextarea) {
+      debug('Before fill - innerHTML:', modalTextarea.innerHTML);
+      debug('Before fill - visible?', modalTextarea.offsetParent !== null);
+      debug('Before fill - ng-show?', modalTextarea.getAttribute('ng-show'));
+
       // For now, use a dummy response
       const dummyResponse = `Thank you for your review! We appreciate your feedback about "${reviewData.title || 'our app'}". Your ${reviewData.rating}-star rating helps us improve our service.`;
 
-      // Set the content (contenteditable divs use textContent/innerHTML, not .value)
-      modalTextarea.textContent = dummyResponse;
+      // Focus the element first to activate Angular's bindings
+      modalTextarea.focus();
 
-      // Trigger Angular's change detection
-      const inputEvent = new Event('input', { bubbles: true });
-      modalTextarea.dispatchEvent(inputEvent);
+      // Preserve the inner div structure that Angular expects
+      modalTextarea.innerHTML = `<div dir="ltr">${dummyResponse}</div>`;
 
-      // Also trigger blur to ensure Angular processes the change
-      const blurEvent = new Event('blur', { bubbles: true });
-      modalTextarea.dispatchEvent(blurEvent);
+      debug('After fill - innerHTML:', modalTextarea.innerHTML);
+
+      // Trigger all possible events to ensure Angular detects the change
+      modalTextarea.dispatchEvent(new Event('focus', { bubbles: true }));
+      modalTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+      modalTextarea.dispatchEvent(new Event('change', { bubbles: true }));
+      modalTextarea.dispatchEvent(new Event('blur', { bubbles: true }));
+
+      // Try alternative: document.execCommand (works with contenteditable)
+      setTimeout(() => {
+        modalTextarea.focus();
+        document.execCommand('selectAll', false, null);
+        document.execCommand('insertText', false, dummyResponse);
+        debug('Tried execCommand fallback');
+      }, 100);
 
       // Add generate button
       addGenerateButton(modalTextarea, reviewData);
@@ -308,16 +323,25 @@
 
       // Update contenteditable div or textarea
       if (textarea.hasAttribute('contenteditable')) {
-        textarea.textContent = randomResponse;
+        // Focus and use innerHTML to preserve Angular's inner div structure
+        textarea.focus();
+        textarea.innerHTML = `<div dir="ltr">${randomResponse}</div>`;
+
+        // Try execCommand as alternative
+        setTimeout(() => {
+          textarea.focus();
+          document.execCommand('selectAll', false, null);
+          document.execCommand('insertText', false, randomResponse);
+        }, 50);
       } else {
         textarea.value = randomResponse;
       }
 
       // Trigger Angular's change detection
-      const inputEvent = new Event('input', { bubbles: true });
-      textarea.dispatchEvent(inputEvent);
-      const blurEvent = new Event('blur', { bubbles: true });
-      textarea.dispatchEvent(blurEvent);
+      textarea.dispatchEvent(new Event('focus', { bubbles: true }));
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      textarea.dispatchEvent(new Event('change', { bubbles: true }));
+      textarea.dispatchEvent(new Event('blur', { bubbles: true }));
 
       // Reset button
       btn.textContent = originalText;

@@ -51,13 +51,18 @@
    */
   function extractReviewData(element) {
     try {
-      const title = element.querySelector(CONFIG.SELECTORS.reviewTitle)?.textContent?.trim() || '';
+      // Flexible title selector - works in both main page and modal
+      const title = element.querySelector(CONFIG.SELECTORS.reviewTitle)?.textContent?.trim() ||
+                    element.querySelector('div[ng-bind*=".value.title"]')?.textContent?.trim() ||
+                    element.querySelector('span[ng-bind*=".value.title"]')?.textContent?.trim() || '';
+
       const ratingElement = element.querySelector(CONFIG.SELECTORS.reviewRating);
       const ratingMatch = ratingElement?.className?.match(/count-(\d)/);
       const rating = ratingMatch ? parseInt(ratingMatch[1]) : 0;
 
-      // Get review content - use Angular ng-bind directive
-      const reviewContent = element.querySelector('div[ng-bind="review.value.review"]')?.textContent?.trim() || '';
+      // Flexible review content selector - works with review.value.review, currentReview.value.review, or class
+      const reviewContent = element.querySelector('div[ng-bind*=".value.review"]')?.textContent?.trim() ||
+                           element.querySelector('.review-body')?.textContent?.trim() || '';
 
       const hasResponse = !!element.querySelector(CONFIG.SELECTORS.devResponse);
 
@@ -199,45 +204,50 @@
   }
 
   /**
-   * Auto-fill response in modal textarea
+   * Auto-fill response in modal (uses contenteditable div, not textarea)
    */
   function autoFillResponse(reviewData) {
     // Log modal structure for debugging
     const modal = document.querySelector('.modal-dialog');
     if (modal) {
-      debug('Modal found! Structure:', modal.innerHTML.substring(0, 500));
-      const textareas = modal.querySelectorAll('textarea');
-      debug(`Found ${textareas.length} textareas in modal`);
-      textareas.forEach((ta, i) => {
-        debug(`Textarea ${i}:`, ta.getAttribute('ng-model'), ta.className);
+      debug('Modal found!');
+      const editableDivs = modal.querySelectorAll('div[contenteditable="true"]');
+      debug(`Found ${editableDivs.length} contenteditable divs in modal`);
+      editableDivs.forEach((div, i) => {
+        debug(`Editable div ${i}:`, div.getAttribute('ng-model'), div.className);
       });
     } else {
       debug('No .modal-dialog found in DOM');
     }
 
-    // Look for the modal textarea
-    const modalTextarea = document.querySelector('.modal-dialog textarea[ng-model="modalData.response"]');
+    // Look for the modal contenteditable div (App Store Connect uses this instead of textarea)
+    const modalTextarea = document.querySelector('.modal-dialog div[contenteditable="true"]') ||
+                         document.querySelector('.modal-dialog div[ng-model="text"]');
 
     if (modalTextarea) {
       // For now, use a dummy response
       const dummyResponse = `Thank you for your review! We appreciate your feedback about "${reviewData.title || 'our app'}". Your ${reviewData.rating}-star rating helps us improve our service.`;
 
-      // Set the value
-      modalTextarea.value = dummyResponse;
+      // Set the content (contenteditable divs use textContent/innerHTML, not .value)
+      modalTextarea.textContent = dummyResponse;
 
       // Trigger Angular's change detection
-      const event = new Event('input', { bubbles: true });
-      modalTextarea.dispatchEvent(event);
+      const inputEvent = new Event('input', { bubbles: true });
+      modalTextarea.dispatchEvent(inputEvent);
+
+      // Also trigger blur to ensure Angular processes the change
+      const blurEvent = new Event('blur', { bubbles: true });
+      modalTextarea.dispatchEvent(blurEvent);
 
       // Add generate button
       addGenerateButton(modalTextarea, reviewData);
 
-      debug('Auto-filled response');
+      debug('Auto-filled response in contenteditable div');
     } else {
-      debug('Modal textarea not found, retrying...');
+      debug('Modal contenteditable div not found, retrying...');
       // Retry after a short delay
       setTimeout(() => {
-        const retry = document.querySelector('.modal-dialog textarea[ng-model="modalData.response"]');
+        const retry = document.querySelector('.modal-dialog div[contenteditable="true"]');
         if (retry) {
           autoFillResponse(reviewData);
         }
@@ -296,10 +306,18 @@
 
       const randomResponse = responses[Math.floor(Math.random() * responses.length)];
 
-      // Update textarea
-      textarea.value = randomResponse;
-      const event = new Event('input', { bubbles: true });
-      textarea.dispatchEvent(event);
+      // Update contenteditable div or textarea
+      if (textarea.hasAttribute('contenteditable')) {
+        textarea.textContent = randomResponse;
+      } else {
+        textarea.value = randomResponse;
+      }
+
+      // Trigger Angular's change detection
+      const inputEvent = new Event('input', { bubbles: true });
+      textarea.dispatchEvent(inputEvent);
+      const blurEvent = new Event('blur', { bubbles: true });
+      textarea.dispatchEvent(blurEvent);
 
       // Reset button
       btn.textContent = originalText;

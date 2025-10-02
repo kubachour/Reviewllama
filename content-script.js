@@ -56,13 +56,17 @@
       const ratingMatch = ratingElement?.className?.match(/count-(\d)/);
       const rating = ratingMatch ? parseInt(ratingMatch[1]) : 0;
 
-      // Get review content - it's the direct text node after review-meta
-      const reviewMeta = element.querySelector('.review-meta');
-      const reviewContentNode = reviewMeta?.nextSibling;
-      const reviewContent = reviewContentNode?.textContent?.trim() || '';
+      // Get review content - use Angular ng-bind directive
+      const reviewContent = element.querySelector('div[ng-bind="review.value.review"]')?.textContent?.trim() || '';
 
       const hasResponse = !!element.querySelector(CONFIG.SELECTORS.devResponse);
-      const nickname = element.querySelector('.review-meta span')?.textContent?.match(/by (.+?) on/)?.[1] || '';
+
+      // Get nickname - parse from "by Username – Date" format
+      const nicknameText = element.querySelector('.review-meta span')?.textContent || '';
+      const nicknameMatch = nicknameText.match(/by (.+?) –/);
+      const nickname = nicknameMatch ? nicknameMatch[1] : '';
+
+      debug('Extracted review:', { title, rating, content: reviewContent.substring(0, 50), nickname, hasResponse });
 
       // Generate unique ID based on content
       const id = btoa(encodeURIComponent(title + nickname + reviewContent)).substring(0, 16);
@@ -198,6 +202,19 @@
    * Auto-fill response in modal textarea
    */
   function autoFillResponse(reviewData) {
+    // Log modal structure for debugging
+    const modal = document.querySelector('.modal-dialog');
+    if (modal) {
+      debug('Modal found! Structure:', modal.innerHTML.substring(0, 500));
+      const textareas = modal.querySelectorAll('textarea');
+      debug(`Found ${textareas.length} textareas in modal`);
+      textareas.forEach((ta, i) => {
+        debug(`Textarea ${i}:`, ta.getAttribute('ng-model'), ta.className);
+      });
+    } else {
+      debug('No .modal-dialog found in DOM');
+    }
+
     // Look for the modal textarea
     const modalTextarea = document.querySelector('.modal-dialog textarea[ng-model="modalData.response"]');
 

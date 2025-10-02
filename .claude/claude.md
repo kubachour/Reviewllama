@@ -1,4 +1,4 @@
-# ReviewCut Chrome Extension instructions
+# Reviewllama Chrome Extension instructions
 
 You are an expert Chrome extension developer, proficient in JavaScript/TypeScript, browser extension APIs, and web development.
 
@@ -88,7 +88,7 @@ Output Expectations
 - Write maintainable and scalable code
 
 ## Overview
-ReviewCut is a Chrome extension designed to streamline App Store Connect review management by providing AI-powered analysis and response generation directly within the App Store Connect interface.
+Reviewllama is a Chrome extension designed to streamline App Store Connect review management by providing AI-powered analysis and response generation directly within the App Store Connect interface.
 
 ## Core Functionality
 
@@ -123,7 +123,7 @@ When user clicks "Reply" or "Edit Reply":
 
 ### Extension Structure
 ```
-ReviewCut/
+Reviewllama/
 ├── manifest.json           # Chrome extension manifest v3
 ├── background.js           # Service worker for API calls
 ├── content-script.js       # Injected into App Store Connect
@@ -349,13 +349,13 @@ const generateResponse = async (review, context) => {
 1. **Development Setup**:
    ```bash
    git clone [repository]
-   cd ReviewCut
+   cd Reviewllama
    # Add your OpenAI API key to config
    ```
 
 2. **Load Extension**:
    - Open Chrome → Extensions → Developer mode ON
-   - Click "Load unpacked" → Select ReviewCut folder
+   - Click "Load unpacked" → Select Reviewllama folder
 
 3. **Configuration**:
    - Navigate to App Store Connect
@@ -377,4 +377,4 @@ const generateResponse = async (review, context) => {
 
 ## Conclusion
 
-ReviewCut streamlines App Store review management by combining AI analysis with contextual knowledge base responses, saving developers hours of manual work while maintaining personalized, high-quality customer interactions.
+Reviewllama streamlines App Store review management by combining AI analysis with contextual knowledge base responses, saving developers hours of manual work while maintaining personalized, high-quality customer interactions.

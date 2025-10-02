@@ -1,5 +1,5 @@
 /**
- * ReviewCut Popup Script
+ * Reviewllama Popup Script
  * Handles extension popup settings and statistics
  */
 
@@ -28,12 +28,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   helpLink.addEventListener('click', (e) => {
     e.preventDefault();
-    chrome.tabs.create({ url: 'https://github.com/reviewcut/docs' });
+    chrome.tabs.create({ url: 'https://github.com/kubachour/Reviewllama' });
   });
 
   privacyLink.addEventListener('click', (e) => {
     e.preventDefault();
-    chrome.tabs.create({ url: 'https://github.com/reviewcut/privacy' });
+    chrome.tabs.create({ url: 'https://github.com/kubachour/Reviewllama' });
   });
 
   /**

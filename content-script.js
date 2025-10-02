@@ -1,5 +1,5 @@
 /**
- * ReviewCut Content Script
+ * Reviewllama Content Script
  * Handles review detection, counting, and UI injection for App Store Connect
  */
 
@@ -37,7 +37,7 @@
    */
   function debug(...args) {
     if (CONFIG.DEBUG) {
-      console.log('[ReviewCut]', ...args);
+      console.log('[Reviewllama]', ...args);
     }
   }
 
@@ -123,7 +123,7 @@
    * Inject review counter into page header
    */
   function injectReviewCounter() {
-    const existingCounter = document.getElementById('reviewcut-counter');
+    const existingCounter = document.getElementById('reviewllama-counter');
     if (existingCounter) {
       existingCounter.remove();
     }
@@ -135,17 +135,17 @@
     }
 
     const counterDiv = document.createElement('div');
-    counterDiv.id = 'reviewcut-counter';
-    counterDiv.className = 'reviewcut-counter';
+    counterDiv.id = 'reviewllama-counter';
+    counterDiv.className = 'reviewllama-counter';
     counterDiv.innerHTML = `
-      <div class="reviewcut-stats">
-        <span class="reviewcut-stat">
-          <span class="reviewcut-label">Total:</span>
-          <span class="reviewcut-value">${state.totalReviews}</span>
+      <div class="reviewllama-stats">
+        <span class="reviewllama-stat">
+          <span class="reviewllama-label">Total:</span>
+          <span class="reviewllama-value">${state.totalReviews}</span>
         </span>
-        <span class="reviewcut-stat reviewcut-unanswered">
-          <span class="reviewcut-label">Unanswered:</span>
-          <span class="reviewcut-value">${state.unansweredReviews}</span>
+        <span class="reviewllama-stat reviewllama-unanswered">
+          <span class="reviewllama-label">Unanswered:</span>
+          <span class="reviewllama-value">${state.unansweredReviews}</span>
         </span>
       </div>
     `;
@@ -226,14 +226,14 @@
    */
   function addGenerateButton(textarea, reviewData) {
     // Check if button already exists
-    if (document.getElementById('reviewcut-generate-btn')) {
+    if (document.getElementById('reviewllama-generate-btn')) {
       return;
     }
 
     const buttonContainer = document.createElement('div');
-    buttonContainer.className = 'reviewcut-generate-container';
+    buttonContainer.className = 'reviewllama-generate-container';
     buttonContainer.innerHTML = `
-      <button id="reviewcut-generate-btn" class="reviewcut-generate-btn">
+      <button id="reviewllama-generate-btn" class="reviewllama-generate-btn">
         Generate AI Response
       </button>
     `;
@@ -242,7 +242,7 @@
     textarea.parentElement.appendChild(buttonContainer);
 
     // Add click handler
-    document.getElementById('reviewcut-generate-btn').addEventListener('click', function(e) {
+    document.getElementById('reviewllama-generate-btn').addEventListener('click', function(e) {
       e.preventDefault();
       generateAIResponse(reviewData, textarea);
     });
@@ -255,7 +255,7 @@
     debug('Generating AI response for:', reviewData);
 
     // Show loading state
-    const btn = document.getElementById('reviewcut-generate-btn');
+    const btn = document.getElementById('reviewllama-generate-btn');
     const originalText = btn.textContent;
     btn.textContent = 'Generating...';
     btn.disabled = true;
@@ -347,7 +347,7 @@
    * Initialize the extension
    */
   function initialize() {
-    debug('Initializing ReviewCut extension');
+    debug('Initializing Reviewllama extension');
 
     // Initial scan
     scanReviews();

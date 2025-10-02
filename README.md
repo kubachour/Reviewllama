@@ -1,4 +1,4 @@
-# ReviewCut Chrome Extension
+# Reviewllama 🦙 Chrome Extension
 
 AI-powered App Store Connect review management with automated response generation.
 
@@ -7,7 +7,7 @@ AI-powered App Store Connect review management with automated response generatio
 1. Open Chrome and navigate to `chrome://extensions/`
 2. Enable "Developer mode" in the top right
 3. Click "Load unpacked"
-4. Select the `ReviewCut` folder
+4. Select the `Reviewllama` folder
 5. The extension is now installed!
 
 ## 📋 Features (MVP)
@@ -48,7 +48,7 @@ AI-powered App Store Connect review management with automated response generatio
 ## 🛠️ Current Structure
 
 ```
-ReviewCut/
+Reviewllama/
 ├── manifest.json           # Chrome extension manifest v3
 ├── background.js           # Service worker for API calls
 ├── content-script.js       # Main script injected into App Store Connect
@@ -66,7 +66,7 @@ ReviewCut/
 ## 🔧 Development
 
 ### Debug Mode
-The extension runs in debug mode by default. Open Chrome DevTools Console to see debug messages prefixed with `[ReviewCut]`.
+The extension runs in debug mode by default. Open Chrome DevTools Console to see debug messages prefixed with `[Reviewllama]`.
 
 ### Modifying Selectors
 If App Store Connect updates their interface, update the selectors in `content-script.js`:
@@ -103,7 +103,7 @@ const CONFIG = {
 ## 🔑 API Key Configuration
 
 1. Get an OpenAI API key from https://platform.openai.com/api-keys
-2. Click the ReviewCut extension icon
+2. Click the Reviewllama extension icon
 3. Enter your API key in the settings
 4. Click "Save" and "Test Connection"
 

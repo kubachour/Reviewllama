@@ -1,10 +1,10 @@
 /**
- * ReviewCut Extension Styles
+ * Reviewllama Extension Styles
  * Minimal, non-intrusive styles that match App Store Connect design
  */
 
 /* Review Counter in Header */
-.reviewcut-counter {
+.reviewllama-counter {
   display: inline-flex;
   align-items: center;
   margin-right: 20px;
@@ -14,41 +14,41 @@
   border: 1px solid rgba(0, 122, 255, 0.2);
 }
 
-.reviewcut-stats {
+.reviewllama-stats {
   display: flex;
   gap: 16px;
   font-size: 13px;
   font-weight: 500;
 }
 
-.reviewcut-stat {
+.reviewllama-stat {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.reviewcut-label {
+.reviewllama-label {
   color: #666;
   font-weight: normal;
 }
 
-.reviewcut-value {
+.reviewllama-value {
   color: #333;
   font-weight: 600;
 }
 
-.reviewcut-unanswered .reviewcut-value {
+.reviewllama-unanswered .reviewllama-value {
   color: #FF3B30;
 }
 
 /* Generate AI Response Button */
-.reviewcut-generate-container {
+.reviewllama-generate-container {
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid #e5e5e5;
 }
 
-.reviewcut-generate-btn {
+.reviewllama-generate-btn {
   background: #007AFF;
   color: white;
   border: none;
@@ -61,18 +61,18 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.reviewcut-generate-btn:hover {
+.reviewllama-generate-btn:hover {
   background: #0051D5;
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
 }
 
-.reviewcut-generate-btn:active {
+.reviewllama-generate-btn:active {
   transform: translateY(0);
   box-shadow: 0 1px 4px rgba(0, 122, 255, 0.2);
 }
 
-.reviewcut-generate-btn:disabled {
+.reviewllama-generate-btn:disabled {
   background: #999;
   cursor: not-allowed;
   transform: none;
@@ -80,14 +80,14 @@
 }
 
 /* Review Labels (for future sentiment/category badges) */
-.reviewcut-labels {
+.reviewllama-labels {
   display: inline-flex;
   gap: 6px;
   margin-left: 12px;
   vertical-align: middle;
 }
 
-.reviewcut-label-badge {
+.reviewllama-label-badge {
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
@@ -98,83 +98,83 @@
 }
 
 /* Sentiment Labels */
-.reviewcut-sentiment-positive {
+.reviewllama-sentiment-positive {
   background: #34C759;
   color: white;
 }
 
-.reviewcut-sentiment-neutral {
+.reviewllama-sentiment-neutral {
   background: #FF9500;
   color: white;
 }
 
-.reviewcut-sentiment-negative {
+.reviewllama-sentiment-negative {
   background: #FF3B30;
   color: white;
 }
 
 /* Category Labels */
-.reviewcut-category {
+.reviewllama-category {
   background: #F2F2F7;
   color: #333;
   border: 1px solid #E5E5EA;
 }
 
-.reviewcut-category-bug {
+.reviewllama-category-bug {
   background: #FFE5E5;
   color: #D70015;
   border-color: #FFB8B8;
 }
 
-.reviewcut-category-feature {
+.reviewllama-category-feature {
   background: #E8F4FF;
   color: #007AFF;
   border-color: #B8DAFF;
 }
 
-.reviewcut-category-praise {
+.reviewllama-category-praise {
   background: #FFE8F1;
   color: #FF2D55;
   border-color: #FFB8CC;
 }
 
-.reviewcut-category-complaint {
+.reviewllama-category-complaint {
   background: #FFF3E5;
   color: #FF6B00;
   border-color: #FFD4A8;
 }
 
-.reviewcut-category-question {
+.reviewllama-category-question {
   background: #F0E5FF;
   color: #5856D6;
   border-color: #D1B8FF;
 }
 
-.reviewcut-category-suggestion {
+.reviewllama-category-suggestion {
   background: #E5F9FF;
   color: #00C7BE;
   border-color: #B8F0ED;
 }
 
 /* Loading Spinner */
-.reviewcut-loading {
+.reviewllama-loading {
   display: inline-block;
   width: 14px;
   height: 14px;
   border: 2px solid rgba(0, 122, 255, 0.3);
   border-top-color: #007AFF;
   border-radius: 50%;
-  animation: reviewcut-spin 1s linear infinite;
+  animation: reviewllama-spin 1s linear infinite;
   margin-left: 8px;
   vertical-align: middle;
 }
 
-@keyframes reviewcut-spin {
+@keyframes reviewllama-spin {
   to { transform: rotate(360deg); }
 }
 
 /* Tooltip */
-.reviewcut-tooltip {
+.reviewllama-tooltip {
   position: absolute;
   background: #333;
   color: white;
@@ -188,11 +188,11 @@
   transition: opacity 0.2s ease;
 }
 
-.reviewcut-tooltip.visible {
+.reviewllama-tooltip.visible {
   opacity: 1;
 }
 
-.reviewcut-tooltip::after {
+.reviewllama-tooltip::after {
   content: '';
   position: absolute;
   top: 100%;
@@ -204,7 +204,7 @@
 }
 
 /* Status Messages */
-.reviewcut-status {
+.reviewllama-status {
   position: fixed;
   bottom: 20px;
   right: 20px;
@@ -218,10 +218,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  animation: reviewcut-slide-in 0.3s ease;
+  animation: reviewllama-slide-in 0.3s ease;
 }
 
-@keyframes reviewcut-slide-in {
+@keyframes reviewllama-slide-in {
   from {
     transform: translateX(400px);
     opacity: 0;
@@ -232,50 +232,50 @@
   }
 }
 
-.reviewcut-status.success {
+.reviewllama-status.success {
   border-color: #34C759;
   background: #F0FFF4;
 }
 
-.reviewcut-status.error {
+.reviewllama-status.error {
   border-color: #FF3B30;
   background: #FFF4F4;
 }
 
-.reviewcut-status.info {
+.reviewllama-status.info {
   border-color: #007AFF;
   background: #F0F8FF;
 }
 
 /* Integration with App Store Connect styles */
-.modal-dialog .reviewcut-generate-container {
+.modal-dialog .reviewllama-generate-container {
   margin-bottom: 0;
   padding-bottom: 0;
 }
 
 /* Ensure our styles don't conflict with Angular animations */
-.ng-animate .reviewcut-counter,
-.ng-animate .reviewcut-labels,
-.ng-animate .reviewcut-generate-container {
+.ng-animate .reviewllama-counter,
+.ng-animate .reviewllama-labels,
+.ng-animate .reviewllama-generate-container {
   transition: none !important;
 }
 
 /* Dark mode support (if App Store Connect adds it) */
 @media (prefers-color-scheme: dark) {
-  .reviewcut-counter {
+  .reviewllama-counter {
     background: rgba(0, 122, 255, 0.15);
     border-color: rgba(0, 122, 255, 0.3);
   }
 
-  .reviewcut-label {
+  .reviewllama-label {
     color: #999;
   }
 
-  .reviewcut-value {
+  .reviewllama-value {
     color: #fff;
   }
 
-  .reviewcut-category {
+  .reviewllama-category {
     background: #2C2C2E;
     color: #fff;
     border-color: #3A3A3C;

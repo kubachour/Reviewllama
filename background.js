@@ -1,5 +1,5 @@
 /**
- * ReviewCut Background Service Worker
+ * Reviewllama Background Service Worker
  * Handles API calls, storage, and badge updates
  */
 
@@ -14,7 +14,7 @@ let extensionState = {
  * Initialize the extension
  */
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('ReviewCut extension installed');
+  console.log('Reviewllama extension installed');
 
   // Set default badge
   chrome.action.setBadgeBackgroundColor({ color: '#007AFF' });

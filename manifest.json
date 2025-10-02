@@ -10,7 +10,8 @@
   ],
 
   "host_permissions": [
-    "https://appstoreconnect.apple.com/*"
+    "https://appstoreconnect.apple.com/*",
+    "https://api.openai.com/*"
   ],
 
   "background": {
@@ -45,7 +46,7 @@
 
   "web_accessible_resources": [
     {
-      "resources": ["knowledgebase.json"],
+      "resources": ["knowledgebase.json", "prompts.json"],
       "matches": ["https://appstoreconnect.apple.com/*"]
     }
   ]

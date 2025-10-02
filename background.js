@@ -7,7 +7,9 @@
 let extensionState = {
   apiKey: null,
   reviews: {},
-  isProcessing: false
+  isProcessing: false,
+  prompts: null,
+  knowledgeBase: null
 };
 
 /**
@@ -20,8 +22,10 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.action.setBadgeBackgroundColor({ color: '#007AFF' });
   chrome.action.setBadgeText({ text: '' });
 
-  // Load saved API key
+  // Load saved API key and configuration files
   loadApiKey();
+  loadPrompts();
+  loadKnowledgeBase();
 });
 
 /**
@@ -50,6 +54,70 @@ async function saveApiKey(apiKey) {
   } catch (error) {
     console.error('Error saving API key:', error);
   }
+}
+
+/**
+ * Load prompts configuration
+ */
+async function loadPrompts() {
+  try {
+    const response = await fetch(chrome.runtime.getURL('prompts.json'));
+    extensionState.prompts = await response.json();
+    console.log('Prompts loaded');
+  } catch (error) {
+    console.error('Error loading prompts:', error);
+  }
+}
+
+/**
+ * Load knowledge base
+ */
+async function loadKnowledgeBase() {
+  try {
+    const response = await fetch(chrome.runtime.getURL('knowledgebase.json'));
+    extensionState.knowledgeBase = await response.json();
+    console.log('Knowledge base loaded');
+  } catch (error) {
+    console.error('Error loading knowledge base:', error);
+  }
+}
+
+/**
+ * Call OpenAI API with retry logic
+ */
+async function callOpenAI(messages, options = {}) {
+  if (!extensionState.apiKey) {
+    throw new Error('API key not configured');
+  }
+
+  const requestBody = {
+    model: 'gpt-4o-mini',
+    messages: messages,
+    temperature: options.temperature || 0.7,
+    max_tokens: options.max_tokens || 500,
+    ...options
+  };
+
+  console.log('Calling OpenAI API:', { model: requestBody.model, messageCount: messages.length });
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${extensionState.apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestBody)
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`OpenAI API error: ${error.error?.message || response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log('OpenAI API response received:', { tokens: data.usage?.total_tokens });
+
+  return data;
 }
 
 /**
@@ -85,6 +153,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         .then(result => sendResponse({ success: true, data: result }))
         .catch(error => sendResponse({ success: false, error: error.message }));
       return true; // Keep channel open for async response
+      break;
+
+    case 'BATCH_ANALYZE_REVIEWS':
+      batchAnalyzeReviews(request.data)
+        .then(result => sendResponse({ success: true, data: result }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true;
+      break;
+
+    case 'GENERATE_AI_RESPONSE':
+      generateAIResponse(request.data)
+        .then(result => sendResponse({ success: true, data: result }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true;
       break;
 
     default:
@@ -266,6 +348,120 @@ async function handleResponseGeneration(data) {
 
   } catch (error) {
     console.error('Error generating response:', error);
+    throw error;
+  }
+}
+
+/**
+ * Batch analyze reviews with OpenAI
+ */
+async function batchAnalyzeReviews(reviews) {
+  if (!extensionState.prompts) {
+    await loadPrompts();
+  }
+
+  console.log(`Batch analyzing ${reviews.length} reviews`);
+
+  // Prepare reviews for analysis (strip DOM elements)
+  const reviewsForAnalysis = reviews.map(r => ({
+    id: r.id,
+    title: r.title,
+    rating: r.rating,
+    content: r.content,
+    nickname: r.nickname
+  }));
+
+  const messages = [
+    {
+      role: 'system',
+      content: extensionState.prompts.system_prompt + '\n\n' + extensionState.prompts.batch_analysis_prompt
+    },
+    {
+      role: 'user',
+      content: JSON.stringify({ reviews: reviewsForAnalysis })
+    }
+  ];
+
+  try {
+    const response = await callOpenAI(messages, {
+      temperature: 0.3,
+      max_tokens: 2000,
+      response_format: { type: 'json_object' }
+    });
+
+    const analysisResult = JSON.parse(response.choices[0].message.content);
+    console.log('Batch analysis completed:', analysisResult);
+
+    return analysisResult;
+  } catch (error) {
+    console.error('Batch analysis error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Generate AI response for a single review with KB context
+ */
+async function generateAIResponse(data) {
+  const { review, matchedKBItems = [] } = data;
+
+  if (!extensionState.prompts) {
+    await loadPrompts();
+  }
+
+  if (!extensionState.knowledgeBase) {
+    await loadKnowledgeBase();
+  }
+
+  console.log('Generating AI response for review:', review.id);
+
+  // Build context from matched KB items
+  let contextText = '';
+  if (matchedKBItems.length > 0) {
+    contextText = matchedKBItems.map(item => {
+      const kbItem = extensionState.knowledgeBase.troubles.find(t => t.id === item.id);
+      if (kbItem) {
+        return `Problem: ${kbItem.problem}\nSolution: ${kbItem.solution[review.analysis?.language || 'en']}`;
+      }
+      return '';
+    }).filter(Boolean).join('\n\n');
+  }
+
+  // Build prompt from template
+  const prompt = extensionState.prompts.response_generation_prompt
+    .replace('{LANGUAGE}', review.analysis?.language || 'en')
+    .replace('{TITLE}', review.title)
+    .replace('{RATING}', review.rating)
+    .replace('{CONTENT}', review.content)
+    .replace('{CONTEXT}', contextText || 'No specific knowledge base items matched.');
+
+  const messages = [
+    {
+      role: 'system',
+      content: extensionState.prompts.system_prompt
+    },
+    {
+      role: 'user',
+      content: prompt
+    }
+  ];
+
+  try {
+    const response = await callOpenAI(messages, {
+      temperature: 0.7,
+      max_tokens: 300
+    });
+
+    const generatedResponse = response.choices[0].message.content.trim();
+    console.log('AI response generated');
+
+    return {
+      response: generatedResponse,
+      matchedKBItems: matchedKBItems,
+      tokensUsed: response.usage?.total_tokens
+    };
+  } catch (error) {
+    console.error('AI response generation error:', error);
     throw error;
   }
 }

@@ -108,21 +108,33 @@ document.addEventListener('DOMContentLoaded', function() {
     testBtn.textContent = 'Testing...';
 
     try {
-      // For MVP, just validate the key format
-      if (apiKey.startsWith('sk-') && apiKey.length > 20) {
-        showStatus('API key format is valid!', 'success');
+      // Make actual API call to verify key
+      const response = await fetch('https://api.openai.com/v1/models', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-        // TODO: Make actual API call to verify
-        // const response = await fetch('https://api.openai.com/v1/models', {
-        //   headers: { 'Authorization': `Bearer ${apiKey}` }
-        // });
+      if (response.ok) {
+        const data = await response.json();
+        // Check if gpt-4o-mini is available
+        const hasGPT4oMini = data.data.some(model => model.id === 'gpt-4o-mini');
+
+        if (hasGPT4oMini) {
+          showStatus('✓ API key is valid! GPT-4o-mini available', 'success');
+        } else {
+          showStatus('✓ API key is valid (but GPT-4o-mini not found)', 'success');
+        }
       } else {
-        showStatus('Invalid API key format', 'error');
+        const error = await response.json();
+        showStatus(`API Error: ${error.error?.message || 'Invalid API key'}`, 'error');
       }
 
     } catch (error) {
       console.error('Error testing API:', error);
-      showStatus('Connection test failed', 'error');
+      showStatus(`Connection test failed: ${error.message}`, 'error');
     } finally {
       testBtn.disabled = false;
       testBtn.textContent = 'Test Connection';

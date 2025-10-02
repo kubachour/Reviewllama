@@ -116,6 +116,11 @@
 
     debug(`Found ${state.totalReviews} reviews (${state.unansweredReviews} unanswered)`);
     updateUI();
+
+    // Trigger batch analysis if we have reviews
+    if (state.totalReviews > 0) {
+      analyzeAllReviews();
+    }
   }
 
   /**
@@ -173,6 +178,172 @@
     } else {
       reviewsHeader.appendChild(counterDiv);
     }
+  }
+
+  /**
+   * Analyze all reviews with OpenAI batch API
+   */
+  async function analyzeAllReviews() {
+    debug('Starting batch analysis...');
+
+    // Check cache first
+    const cacheKey = `analysis_cache_${window.location.pathname}`;
+    const cached = await chrome.storage.local.get(cacheKey);
+
+    if (cached[cacheKey] && Date.now() - cached[cacheKey].timestamp < 24 * 60 * 60 * 1000) {
+      debug('Using cached analysis');
+      applyAnalysisResults(cached[cacheKey].data);
+      return;
+    }
+
+    // Prepare reviews array
+    const reviews = Array.from(state.reviews.values());
+
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: 'BATCH_ANALYZE_REVIEWS',
+        data: reviews
+      });
+
+      if (response.success) {
+        debug('Batch analysis successful');
+
+        // Cache results
+        await chrome.storage.local.set({
+          [cacheKey]: {
+            timestamp: Date.now(),
+            data: response.data
+          }
+        });
+
+        applyAnalysisResults(response.data);
+      } else {
+        debug('Batch analysis failed:', response.error);
+      }
+    } catch (error) {
+      debug('Error in batch analysis:', error);
+    }
+  }
+
+  /**
+   * Apply analysis results to reviews and inject labels
+   */
+  function applyAnalysisResults(analysisData) {
+    if (!analysisData || !analysisData.reviews) {
+      debug('Invalid analysis data');
+      return;
+    }
+
+    // Update state with analysis
+    analysisData.reviews.forEach(analysis => {
+      const review = state.reviews.get(analysis.id);
+      if (review) {
+        review.analysis = {
+          sentiment: analysis.sentiment,
+          category: analysis.category,
+          language: analysis.language,
+          topics: analysis.topics || []
+        };
+        state.reviews.set(analysis.id, review);
+      }
+    });
+
+    debug('Analysis applied to reviews');
+
+    // Inject visual labels
+    injectReviewLabels();
+  }
+
+  /**
+   * Inject sentiment and category labels into review UI
+   */
+  function injectReviewLabels() {
+    state.reviews.forEach(review => {
+      if (!review.analysis || !review.element) return;
+
+      // Check if labels already exist
+      if (review.element.querySelector('.reviewllama-labels')) return;
+
+      const { sentiment, category } = review.analysis;
+
+      // Create labels container
+      const labelsDiv = document.createElement('div');
+      labelsDiv.className = 'reviewllama-labels';
+
+      // Sentiment label
+      const sentimentEmoji = {
+        positive: '🟢',
+        negative: '🔴',
+        neutral: '🟡'
+      }[sentiment] || '⚪';
+
+      // Category label
+      const categoryEmoji = {
+        bug: '🐛',
+        feature: '✨',
+        praise: '❤️',
+        complaint: '😤',
+        question: '❓',
+        suggestion: '💡'
+      }[category] || '📝';
+
+      labelsDiv.innerHTML = `
+        <span class="reviewllama-label reviewllama-sentiment-${sentiment}" title="Sentiment: ${sentiment}">
+          ${sentimentEmoji}
+        </span>
+        <span class="reviewllama-label reviewllama-category-${category}" title="Category: ${category}">
+          ${categoryEmoji}
+        </span>
+      `;
+
+      // Insert after review title
+      const reviewTop = review.element.querySelector('.review-top h3');
+      if (reviewTop) {
+        reviewTop.appendChild(labelsDiv);
+      }
+    });
+
+    debug('Review labels injected');
+  }
+
+  /**
+   * Match review against knowledge base (client-side)
+   */
+  function matchKnowledgeBase(review) {
+    return new Promise(async (resolve) => {
+      try {
+        // Load knowledge base
+        const response = await fetch(chrome.runtime.getURL('knowledgebase.json'));
+        const kb = await response.json();
+
+        const reviewText = (review.title + ' ' + review.content).toLowerCase();
+        const scores = [];
+
+        // Score each trouble item
+        kb.troubles.forEach(item => {
+          let score = 0;
+          item.keywords.forEach(keyword => {
+            if (reviewText.includes(keyword.toLowerCase())) {
+              score++;
+            }
+          });
+
+          if (score > 0) {
+            scores.push({ id: item.id, score, item });
+          }
+        });
+
+        // Return top 3 matches
+        const matches = scores
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3);
+
+        resolve(matches);
+      } catch (error) {
+        debug('Error matching KB:', error);
+        resolve([]);
+      }
+    });
   }
 
   /**
@@ -244,38 +415,22 @@
       debug('Before fill - visible?', modalTextarea.offsetParent !== null);
       debug('Before fill - ng-show?', modalTextarea.getAttribute('ng-show'));
 
-      // For now, use a dummy response
-      const dummyResponse = `Thank you for your review! We appreciate your feedback about "${reviewData.title || 'our app'}". Your ${reviewData.rating}-star rating helps us improve our service.`;
-
-      // Click on the element first to ensure it's active
-      modalTextarea.click();
-
-      // Small delay to let Angular activate the element
-      setTimeout(() => {
-        // Focus the element
-        modalTextarea.focus();
-
-        // Select all existing content and delete it
-        document.execCommand('selectAll', false, null);
-        document.execCommand('delete', false, null);
-
-        // Insert new text character by character to better simulate typing
-        for (let char of dummyResponse) {
-          document.execCommand('insertText', false, char);
-        }
-
-        debug('After fill - innerHTML:', modalTextarea.innerHTML);
-
-        // Trigger all events
-        modalTextarea.dispatchEvent(new Event('input', { bubbles: true }));
-        modalTextarea.dispatchEvent(new Event('change', { bubbles: true }));
-        modalTextarea.dispatchEvent(new Event('blur', { bubbles: true }));
-      }, 100);
-
-      // Add generate button
+      // Add generate button first
       addGenerateButton(modalTextarea, reviewData);
 
-      debug('Auto-filled response in contenteditable div');
+      // Use cached response if available, otherwise generate new one
+      if (reviewData.generatedResponse) {
+        debug('Using cached AI response');
+        insertTextIntoModal(modalTextarea, reviewData.generatedResponse);
+      } else {
+        // Auto-generate on open (this will call the AI API)
+        debug('Auto-generating AI response...');
+        setTimeout(() => {
+          generateAIResponse(reviewData, modalTextarea);
+        }, 300);
+      }
+
+      debug('Auto-fill initiated');
     } else {
       debug('Modal contenteditable div not found, retrying...');
       // Retry after a short delay
@@ -316,9 +471,9 @@
   }
 
   /**
-   * Generate AI response (placeholder for now)
+   * Generate AI response with real OpenAI API
    */
-  function generateAIResponse(reviewData, textarea) {
+  async function generateAIResponse(reviewData, textarea) {
     debug('Generating AI response for:', reviewData);
 
     // Show loading state
@@ -327,47 +482,71 @@
     btn.textContent = 'Generating...';
     btn.disabled = true;
 
-    // Simulate API call with timeout
-    setTimeout(() => {
-      // Generate a slightly more personalized dummy response
-      const responses = [
-        `Thank you for taking the time to share your feedback, ${reviewData.nickname}! We're glad you're using our app.`,
-        `We appreciate your ${reviewData.rating}-star review! Your feedback about "${reviewData.title || 'the app'}" is valuable to us.`,
-        `Thanks for your review! We're constantly working to improve the app based on feedback like yours.`,
-        `Hi ${reviewData.nickname}, thank you for your feedback! We take all reviews seriously and use them to make our app better.`
-      ];
+    try {
+      // Match review against knowledge base
+      const matchedKBItems = await matchKnowledgeBase(reviewData);
+      debug('Matched KB items:', matchedKBItems);
 
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-
-      // Update contenteditable div or textarea
-      if (textarea.hasAttribute('contenteditable')) {
-        // Click and focus the element
-        textarea.click();
-        textarea.focus();
-
-        // Select all and delete
-        document.execCommand('selectAll', false, null);
-        document.execCommand('delete', false, null);
-
-        // Insert text character by character
-        for (let char of randomResponse) {
-          document.execCommand('insertText', false, char);
+      // Call background script for AI generation
+      const response = await chrome.runtime.sendMessage({
+        type: 'GENERATE_AI_RESPONSE',
+        data: {
+          review: reviewData,
+          matchedKBItems: matchedKBItems
         }
+      });
 
-        // Trigger Angular's change detection
-        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-        textarea.dispatchEvent(new Event('change', { bubbles: true }));
-        textarea.dispatchEvent(new Event('blur', { bubbles: true }));
+      if (response.success) {
+        const generatedResponse = response.data.response;
+        debug('AI response received:', generatedResponse.substring(0, 50) + '...');
+
+        // Insert response into textarea
+        insertTextIntoModal(textarea, generatedResponse);
+
+        // Cache the response
+        reviewData.generatedResponse = generatedResponse;
+        state.reviews.set(reviewData.id, reviewData);
       } else {
-        textarea.value = randomResponse;
-        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-        textarea.dispatchEvent(new Event('change', { bubbles: true }));
+        debug('AI generation failed:', response.error);
+        alert(`Error generating response: ${response.error}`);
       }
-
+    } catch (error) {
+      debug('Error in AI generation:', error);
+      alert(`Error: ${error.message}`);
+    } finally {
       // Reset button
       btn.textContent = originalText;
       btn.disabled = false;
-    }, 1000);
+    }
+  }
+
+  /**
+   * Insert text into modal contenteditable or textarea
+   */
+  function insertTextIntoModal(element, text) {
+    if (element.hasAttribute('contenteditable')) {
+      // Click and focus the element
+      element.click();
+      element.focus();
+
+      // Select all and delete
+      document.execCommand('selectAll', false, null);
+      document.execCommand('delete', false, null);
+
+      // Insert text character by character
+      for (let char of text) {
+        document.execCommand('insertText', false, char);
+      }
+
+      // Trigger Angular's change detection
+      element.dispatchEvent(new Event('input', { bubbles: true }));
+      element.dispatchEvent(new Event('change', { bubbles: true }));
+      element.dispatchEvent(new Event('blur', { bubbles: true }));
+    } else {
+      element.value = text;
+      element.dispatchEvent(new Event('input', { bubbles: true }));
+      element.dispatchEvent(new Event('change', { bubbles: true }));
+    }
   }
 
   /**

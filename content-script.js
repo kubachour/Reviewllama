@@ -232,27 +232,36 @@
       // For now, use a dummy response
       const dummyResponse = `Thank you for your review! We appreciate your feedback about "${reviewData.title || 'our app'}". Your ${reviewData.rating}-star rating helps us improve our service.`;
 
-      // Focus the element first to activate Angular's bindings
+      // Method 1: Try to access Angular scope and update model directly
+      try {
+        const angularElement = angular.element(modalTextarea);
+        const scope = angularElement.scope();
+        if (scope) {
+          debug('Found Angular scope, updating ng-model directly');
+          scope.text = dummyResponse;
+          scope.$apply();
+          debug('Angular scope updated');
+        }
+      } catch (e) {
+        debug('Could not access Angular scope:', e.message);
+      }
+
+      // Method 2: Focus and use execCommand (simulates real typing)
       modalTextarea.focus();
 
-      // Preserve the inner div structure that Angular expects
-      modalTextarea.innerHTML = `<div dir="ltr">${dummyResponse}</div>`;
+      // Clear existing content first
+      document.execCommand('selectAll', false, null);
+      document.execCommand('delete', false, null);
+
+      // Insert new text
+      document.execCommand('insertText', false, dummyResponse);
 
       debug('After fill - innerHTML:', modalTextarea.innerHTML);
 
-      // Trigger all possible events to ensure Angular detects the change
-      modalTextarea.dispatchEvent(new Event('focus', { bubbles: true }));
+      // Trigger all events
       modalTextarea.dispatchEvent(new Event('input', { bubbles: true }));
       modalTextarea.dispatchEvent(new Event('change', { bubbles: true }));
       modalTextarea.dispatchEvent(new Event('blur', { bubbles: true }));
-
-      // Try alternative: document.execCommand (works with contenteditable)
-      setTimeout(() => {
-        modalTextarea.focus();
-        document.execCommand('selectAll', false, null);
-        document.execCommand('insertText', false, dummyResponse);
-        debug('Tried execCommand fallback');
-      }, 100);
 
       // Add generate button
       addGenerateButton(modalTextarea, reviewData);
@@ -323,22 +332,29 @@
 
       // Update contenteditable div or textarea
       if (textarea.hasAttribute('contenteditable')) {
-        // Focus and use innerHTML to preserve Angular's inner div structure
-        textarea.focus();
-        textarea.innerHTML = `<div dir="ltr">${randomResponse}</div>`;
+        // Try to access Angular scope first
+        try {
+          const angularElement = angular.element(textarea);
+          const scope = angularElement.scope();
+          if (scope) {
+            scope.text = randomResponse;
+            scope.$apply();
+            debug('Angular scope updated with new response');
+          }
+        } catch (e) {
+          debug('Could not access Angular scope:', e.message);
+        }
 
-        // Try execCommand as alternative
-        setTimeout(() => {
-          textarea.focus();
-          document.execCommand('selectAll', false, null);
-          document.execCommand('insertText', false, randomResponse);
-        }, 50);
+        // Use execCommand to simulate real typing
+        textarea.focus();
+        document.execCommand('selectAll', false, null);
+        document.execCommand('delete', false, null);
+        document.execCommand('insertText', false, randomResponse);
       } else {
         textarea.value = randomResponse;
       }
 
       // Trigger Angular's change detection
-      textarea.dispatchEvent(new Event('focus', { bubbles: true }));
       textarea.dispatchEvent(new Event('input', { bubbles: true }));
       textarea.dispatchEvent(new Event('change', { bubbles: true }));
       textarea.dispatchEvent(new Event('blur', { bubbles: true }));

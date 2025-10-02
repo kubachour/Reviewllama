@@ -288,18 +288,20 @@
       }[category] || '📝';
 
       labelsDiv.innerHTML = `
-        <span class="reviewllama-label reviewllama-sentiment-${sentiment}" title="Sentiment: ${sentiment}">
-          ${sentimentEmoji}
+        <span class="reviewllama-badge reviewllama-sentiment-badge reviewllama-sentiment-${sentiment}">
+          <span class="reviewllama-emoji">${sentimentEmoji}</span>
+          <span class="reviewllama-text">${sentiment.charAt(0).toUpperCase() + sentiment.slice(1)}</span>
         </span>
-        <span class="reviewllama-label reviewllama-category-${category}" title="Category: ${category}">
-          ${categoryEmoji}
+        <span class="reviewllama-badge reviewllama-category-badge reviewllama-category-${category}">
+          <span class="reviewllama-emoji">${categoryEmoji}</span>
+          <span class="reviewllama-text">${category.charAt(0).toUpperCase() + category.slice(1)}</span>
         </span>
       `;
 
-      // Insert after review title
-      const reviewTop = review.element.querySelector('.review-top h3');
+      // Insert BEFORE review-top (as separate prominent row)
+      const reviewTop = review.element.querySelector('.review-top');
       if (reviewTop) {
-        reviewTop.appendChild(labelsDiv);
+        review.element.insertBefore(labelsDiv, reviewTop);
       }
     });
 

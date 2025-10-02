@@ -79,81 +79,95 @@
   box-shadow: none;
 }
 
-/* Review Labels (for future sentiment/category badges) */
+/* Review Labels - Prominent Badge Style */
 .reviewllama-labels {
-  display: inline-flex;
-  gap: 6px;
-  margin-left: 12px;
-  vertical-align: middle;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 8px 0;
 }
 
-.reviewllama-label-badge {
+.reviewllama-badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 500;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 600;
   line-height: 1.4;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Sentiment Labels */
+.reviewllama-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.reviewllama-emoji {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.reviewllama-text {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Sentiment Badge Colors */
 .reviewllama-sentiment-positive {
-  background: #34C759;
+  background: linear-gradient(135deg, #34C759 0%, #30D158 100%);
   color: white;
 }
 
 .reviewllama-sentiment-neutral {
-  background: #FF9500;
+  background: linear-gradient(135deg, #FF9500 0%, #FFB340 100%);
   color: white;
 }
 
 .reviewllama-sentiment-negative {
-  background: #FF3B30;
+  background: linear-gradient(135deg, #FF3B30 0%, #FF6961 100%);
   color: white;
 }
 
-/* Category Labels */
-.reviewllama-category {
-  background: #F2F2F7;
-  color: #333;
-  border: 1px solid #E5E5EA;
-}
-
+/* Category Badge Colors */
 .reviewllama-category-bug {
-  background: #FFE5E5;
+  background: linear-gradient(135deg, #FFE5E5 0%, #FFD4D4 100%);
   color: #D70015;
-  border-color: #FFB8B8;
+  border: 1px solid #FFB8B8;
 }
 
 .reviewllama-category-feature {
-  background: #E8F4FF;
+  background: linear-gradient(135deg, #E8F4FF 0%, #D4EBFF 100%);
   color: #007AFF;
-  border-color: #B8DAFF;
+  border: 1px solid #B8DAFF;
 }
 
 .reviewllama-category-praise {
-  background: #FFE8F1;
+  background: linear-gradient(135deg, #FFE8F1 0%, #FFD4E5 100%);
   color: #FF2D55;
-  border-color: #FFB8CC;
+  border: 1px solid #FFB8CC;
 }
 
 .reviewllama-category-complaint {
-  background: #FFF3E5;
+  background: linear-gradient(135deg, #FFF3E5 0%, #FFE8D4 100%);
   color: #FF6B00;
-  border-color: #FFD4A8;
+  border: 1px solid #FFD4A8;
 }
 
 .reviewllama-category-question {
-  background: #F0E5FF;
+  background: linear-gradient(135deg, #F0E5FF 0%, #E5D4FF 100%);
   color: #5856D6;
-  border-color: #D1B8FF;
+  border: 1px solid #D1B8FF;
 }
 
 .reviewllama-category-suggestion {
-  background: #E5F9FF;
+  background: linear-gradient(135deg, #E5F9FF 0%, #D4F3FF 100%);
   color: #00C7BE;
-  border-color: #B8F0ED;
+  border: 1px solid #B8F0ED;
 }
 
 /* Loading Spinner */

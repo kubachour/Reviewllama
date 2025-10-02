@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "name": "ReviewCut - App Store Review Manager",
+  "version": "1.0.0",
+  "description": "AI-powered App Store Connect review management with automated response generation",
+
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+
+  "host_permissions": [
+    "https://appstoreconnect.apple.com/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://appstoreconnect.apple.com/WebObjects/iTunesConnect.woa/ra/ng/app/*/ios/activity/ios/ratingsResponses*",
+        "https://appstoreconnect.apple.com/WebObjects/iTunesConnect.woa/ra/ng/app/*/tvos/activity/tvos/ratingsResponses*",
+        "https://appstoreconnect.apple.com/WebObjects/iTunesConnect.woa/ra/ng/app/*/osx/activity/mac/ratingsResponses*"
+      ],
+      "js": ["content-script.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": ["knowledgebase.json"],
+      "matches": ["https://appstoreconnect.apple.com/*"]
+    }
+  ]
+}

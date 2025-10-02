@@ -1,0 +1,98 @@
+{
+  "troubles": [
+    {
+      "id": "login_issue",
+      "problem": "I can't log in to the app",
+      "solution": {
+        "cs": "Zkuste resetovat heslo pomocí funkce 'Zapomenuté heslo' na přihlašovací obrazovce. Ujistěte se, že používáte správnou e-mailovou adresu.",
+        "en": "Try resetting your password using the 'Forgot Password' feature on the login screen. Make sure you're using the correct email address."
+      },
+      "categories": ["authentication", "login"],
+      "keywords": ["login", "sign in", "password", "authenticate", "access"]
+    },
+    {
+      "id": "crash_on_startup",
+      "problem": "App crashes on startup",
+      "solution": {
+        "cs": "Zkuste aplikaci odinstalovat a znovu nainstalovat. Ujistěte se, že máte nejnovější verzi iOS a dostatek volného místa.",
+        "en": "Try uninstalling and reinstalling the app. Make sure you have the latest iOS version and enough free storage space."
+      },
+      "categories": ["bug", "crash"],
+      "keywords": ["crash", "freeze", "startup", "launch", "open"]
+    },
+    {
+      "id": "sync_issue",
+      "problem": "Data not syncing between devices",
+      "solution": {
+        "cs": "Zkontrolujte internetové připojení na všech zařízeních. V nastavení aplikace zkuste vypnout a zapnout synchronizaci.",
+        "en": "Check your internet connection on all devices. Try turning sync off and on again in the app settings."
+      },
+      "categories": ["sync", "data"],
+      "keywords": ["sync", "synchronization", "devices", "data", "update"]
+    },
+    {
+      "id": "payment_issue",
+      "problem": "Payment not processing",
+      "solution": {
+        "cs": "Zkontrolujte platební údaje v App Store. Ujistěte se, že vaše platební metoda je platná a má dostatečný zůstatek.",
+        "en": "Check your payment information in the App Store. Make sure your payment method is valid and has sufficient balance."
+      },
+      "categories": ["billing", "payment"],
+      "keywords": ["payment", "purchase", "subscription", "billing", "charge"]
+    },
+    {
+      "id": "notification_issue",
+      "problem": "Not receiving notifications",
+      "solution": {
+        "cs": "V Nastavení iOS zkontrolujte oprávnění pro oznámení. Ujistěte se, že jsou oznámení povolena pro naši aplikaci.",
+        "en": "Check notification permissions in iOS Settings. Make sure notifications are enabled for our app."
+      },
+      "categories": ["notifications", "settings"],
+      "keywords": ["notification", "alert", "push", "remind", "notify"]
+    }
+  ],
+  "templates": {
+    "bug_acknowledgment": {
+      "cs": "Děkujeme za nahlášení tohoto problému. Náš vývojový tým se na to podívá a oprava bude zahrnuta v příští aktualizaci.",
+      "en": "Thank you for reporting this issue. Our development team will look into it and a fix will be included in the next update."
+    },
+    "feature_request": {
+      "cs": "Děkujeme za váš návrh! Předáme ho našemu produktovému týmu k posouzení pro budoucí aktualizace.",
+      "en": "Thank you for your suggestion! We'll pass it along to our product team for consideration in future updates."
+    },
+    "praise_response": {
+      "cs": "Jsme rádi, že se vám naše aplikace líbí! Vaše pozitivní hodnocení nás velmi motivuje.",
+      "en": "We're thrilled that you enjoy our app! Your positive feedback means a lot to us."
+    },
+    "complaint_response": {
+      "cs": "Omlouváme se za nepříjemnosti. Vaše zpětná vazba je pro nás důležitá a pomáhá nám aplikaci zlepšovat.",
+      "en": "We apologize for the inconvenience. Your feedback is important to us and helps us improve the app."
+    },
+    "question_response": {
+      "cs": "Děkujeme za váš dotaz. Doufáme, že naše odpověď vám pomohla. Pokud máte další otázky, neváhejte nás kontaktovat.",
+      "en": "Thank you for your question. We hope our response was helpful. If you have any other questions, feel free to reach out."
+    },
+    "suggestion_response": {
+      "cs": "Oceňujeme váš návrh na zlepšení. Zvážíme ho při plánování budoucích funkcí.",
+      "en": "We appreciate your suggestion for improvement. We'll consider it when planning future features."
+    }
+  },
+  "phrases": {
+    "greeting": {
+      "cs": ["Dobrý den", "Ahoj", "Děkujeme za vaši recenzi"],
+      "en": ["Hello", "Hi there", "Thank you for your review"]
+    },
+    "closing": {
+      "cs": ["S pozdravem", "Děkujeme", "Přejeme hezký den"],
+      "en": ["Best regards", "Thank you", "Have a great day"]
+    },
+    "apology": {
+      "cs": ["Omlouváme se za potíže", "Je nám líto, že jste měli špatnou zkušenost"],
+      "en": ["We apologize for the trouble", "We're sorry you had a poor experience"]
+    },
+    "appreciation": {
+      "cs": ["Vážíme si vaší zpětné vazby", "Děkujeme za váš čas"],
+      "en": ["We value your feedback", "Thank you for taking the time"]
+    }
+  }
+}

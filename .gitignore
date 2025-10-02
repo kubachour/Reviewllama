@@ -1,0 +1,24 @@
+# Downloaded page structure (for reference only, not part of extension)
+appstoreconnect.apple.com/
+securemetrics.apple.com/
+www.apple.com/
+xp.apple.com/
+_DataURI/
+
+# Node modules
+node_modules/
+
+# Mac system files
+.DS_Store
+
+# IDE files
+.idea/
+.vscode/
+
+# Temporary files
+*.tmp
+*.log
+
+# API keys and sensitive data (if stored locally for development)
+config.local.json
+.env

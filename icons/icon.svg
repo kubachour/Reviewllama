@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Background Circle -->
+  <circle cx="64" cy="64" r="60" fill="#007AFF" />
+
+  <!-- Star Icon -->
+  <path d="M64 20 L72 44 L98 44 L78 60 L86 84 L64 68 L42 84 L50 60 L30 44 L56 44 Z"
+        fill="white" />
+
+  <!-- Review Lines -->
+  <rect x="24" y="92" width="80" height="4" rx="2" fill="white" opacity="0.9"/>
+  <rect x="24" y="102" width="60" height="4" rx="2" fill="white" opacity="0.7"/>
+</svg>

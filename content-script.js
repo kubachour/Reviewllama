@@ -6,6 +6,11 @@
 (function() {
   'use strict';
 
+  // Log script load immediately
+  console.log('[Reviewllama] Content script loaded!');
+  console.log('[Reviewllama] Current URL:', window.location.href);
+  console.log('[Reviewllama] Page title:', document.title);
+
   // Configuration
   const CONFIG = {
     DEBUG: true,
@@ -81,7 +86,9 @@
    * Scan page for reviews and count them
    */
   function scanReviews() {
+    debug('Starting scanReviews()...');
     const reviewElements = document.querySelectorAll(CONFIG.SELECTORS.reviewContainer);
+    debug(`Found ${reviewElements.length} elements matching ${CONFIG.SELECTORS.reviewContainer}`);
 
     state.reviews.clear();
     state.totalReviews = 0;
@@ -370,24 +377,42 @@
    * Wait for page to be ready
    */
   function waitForReviews() {
+    debug('waitForReviews() started - checking every 500ms...');
+    let attempts = 0;
+
     const checkInterval = setInterval(() => {
-      if (document.querySelector(CONFIG.SELECTORS.reviewContainer) ||
-          document.querySelector('#reviews-container')) {
+      attempts++;
+      const reviewContainer = document.querySelector(CONFIG.SELECTORS.reviewContainer);
+      const reviewsDiv = document.querySelector('#reviews-container');
+
+      debug(`Attempt ${attempts}: reviewContainer=${!!reviewContainer}, reviewsDiv=${!!reviewsDiv}`);
+
+      if (reviewContainer || reviewsDiv) {
+        debug('Found reviews! Initializing...');
         clearInterval(checkInterval);
         initialize();
       }
     }, 500);
 
     // Stop checking after 30 seconds
-    setTimeout(() => clearInterval(checkInterval), 30000);
+    setTimeout(() => {
+      clearInterval(checkInterval);
+      debug(`Stopped checking after ${attempts} attempts (30 seconds)`);
+    }, 30000);
   }
 
   // Start when DOM is ready
+  debug(`Document readyState: ${document.readyState}`);
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', waitForReviews);
+    debug('Waiting for DOMContentLoaded...');
+    document.addEventListener('DOMContentLoaded', () => {
+      debug('DOMContentLoaded fired!');
+      waitForReviews();
+    });
   } else {
+    debug('DOM already ready, starting immediately...');
     waitForReviews();
   }
 
-  debug('Content script loaded');
+  debug('Content script initialization complete');
 })();

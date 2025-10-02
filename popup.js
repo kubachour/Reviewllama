@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const autoFillToggle = document.getElementById('autoFill');
   const helpLink = document.getElementById('helpLink');
   const privacyLink = document.getElementById('privacyLink');
+  const debugInfo = document.getElementById('debugInfo');
 
   // Load settings
   loadSettings();
@@ -139,8 +140,16 @@ document.addEventListener('DOMContentLoaded', function() {
         currentWindow: true
       });
 
+      // Display current URL for debugging
+      if (tab && tab.url) {
+        const shortUrl = tab.url.length > 60 ? tab.url.substring(0, 60) + '...' : tab.url;
+        debugInfo.textContent = `Current: ${shortUrl}`;
+      }
+
       // Check if we're on App Store Connect
       if (tab && tab.url && tab.url.includes('appstoreconnect.apple.com')) {
+        debugInfo.textContent += '\n✓ On App Store Connect';
+
         // Request stats from content script
         chrome.tabs.sendMessage(tab.id, {
           type: 'GET_STATS'
@@ -148,11 +157,14 @@ document.addEventListener('DOMContentLoaded', function() {
           // Check for connection error (content script not loaded)
           if (chrome.runtime.lastError) {
             console.log('Content script not loaded:', chrome.runtime.lastError.message);
+            debugInfo.textContent += '\n✗ Content script not loaded';
+            debugInfo.textContent += '\n→ Check: Are you on Ratings & Reviews page?';
             totalReviews.textContent = '-';
             unansweredReviews.textContent = '-';
             return;
           }
 
+          debugInfo.textContent += '\n✓ Content script active';
           if (response && response.success) {
             totalReviews.textContent = response.data.total || '0';
             unansweredReviews.textContent = response.data.unanswered || '0';
@@ -163,12 +175,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       } else {
         // Not on App Store Connect
+        debugInfo.textContent += '\n→ Not on App Store Connect';
         totalReviews.textContent = '-';
         unansweredReviews.textContent = '-';
       }
 
     } catch (error) {
       console.error('Error updating stats:', error);
+      debugInfo.textContent = 'Error: ' + error.message;
     }
   }
 

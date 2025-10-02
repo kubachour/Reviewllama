@@ -22,7 +22,9 @@
       "matches": [
         "https://appstoreconnect.apple.com/WebObjects/iTunesConnect.woa/ra/ng/app/*/ios/activity/ios/ratingsResponses*",
         "https://appstoreconnect.apple.com/WebObjects/iTunesConnect.woa/ra/ng/app/*/tvos/activity/tvos/ratingsResponses*",
-        "https://appstoreconnect.apple.com/WebObjects/iTunesConnect.woa/ra/ng/app/*/osx/activity/mac/ratingsResponses*"
+        "https://appstoreconnect.apple.com/WebObjects/iTunesConnect.woa/ra/ng/app/*/osx/activity/mac/ratingsResponses*",
+        "https://appstoreconnect.apple.com/apps/*/appstore/ios/ratingsResponses*",
+        "https://appstoreconnect.apple.com/apps/*/appstore/activity*"
       ],
       "js": ["content-script.js"],
       "css": ["styles.css"],

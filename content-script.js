@@ -258,13 +258,32 @@
    * Inject sentiment and category labels into review UI
    */
   function injectReviewLabels() {
+    debug('Starting label injection...');
+    let injectedCount = 0;
+    let skippedCount = 0;
+
     state.reviews.forEach(review => {
-      if (!review.analysis || !review.element) return;
+      if (!review.analysis) {
+        debug('Review has no analysis:', review.id);
+        skippedCount++;
+        return;
+      }
+
+      if (!review.element) {
+        debug('Review has no element:', review.id);
+        skippedCount++;
+        return;
+      }
 
       // Check if labels already exist
-      if (review.element.querySelector('.reviewllama-labels')) return;
+      if (review.element.querySelector('.reviewllama-labels')) {
+        skippedCount++;
+        return;
+      }
 
       const { sentiment, category } = review.analysis;
+
+      debug(`Injecting labels for review ${review.id}: ${sentiment} / ${category}`);
 
       // Create labels container
       const labelsDiv = document.createElement('div');
@@ -302,10 +321,14 @@
       const reviewTop = review.element.querySelector('.review-top');
       if (reviewTop) {
         review.element.insertBefore(labelsDiv, reviewTop);
+        injectedCount++;
+        debug('Label injected successfully for:', review.id);
+      } else {
+        debug('Could not find .review-top for:', review.id);
       }
     });
 
-    debug('Review labels injected');
+    debug(`Review labels injected: ${injectedCount} injected, ${skippedCount} skipped`);
   }
 
   /**

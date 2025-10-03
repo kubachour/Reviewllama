@@ -117,9 +117,16 @@
     debug(`Found ${state.totalReviews} reviews (${state.unansweredReviews} unanswered)`);
     updateUI();
 
-    // Trigger batch analysis if we have reviews
-    if (state.totalReviews > 0) {
+    // Trigger batch analysis only if we have REAL reviews (not empty ones)
+    const hasRealReviews = Array.from(state.reviews.values()).some(r =>
+      r.title || r.content || r.nickname
+    );
+
+    if (state.totalReviews > 0 && hasRealReviews) {
+      debug('Has real reviews, triggering analysis');
       analyzeAllReviews();
+    } else if (state.totalReviews > 0) {
+      debug('Skipping analysis - only empty reviews found');
     }
   }
 
@@ -190,14 +197,29 @@
     const cacheKey = `analysis_cache_${window.location.pathname}`;
     const cached = await chrome.storage.local.get(cacheKey);
 
-    if (cached[cacheKey] && Date.now() - cached[cacheKey].timestamp < 24 * 60 * 60 * 1000) {
-      debug('Using cached analysis');
+    // Use cache only if it's recent AND has actual data
+    if (cached[cacheKey] &&
+        Date.now() - cached[cacheKey].timestamp < 24 * 60 * 60 * 1000 &&
+        cached[cacheKey].data?.reviews?.length > 0) {
+      debug('Using cached analysis with', cached[cacheKey].data.reviews.length, 'reviews');
       applyAnalysisResults(cached[cacheKey].data);
+      return;
+    } else if (cached[cacheKey]) {
+      debug('Cache exists but is empty or stale, clearing...');
+      await chrome.storage.local.remove(cacheKey);
+    }
+
+    // Prepare reviews array - filter out empty reviews
+    const reviews = Array.from(state.reviews.values()).filter(r =>
+      r.title || r.content || r.nickname
+    );
+
+    if (reviews.length === 0) {
+      debug('No valid reviews to analyze');
       return;
     }
 
-    // Prepare reviews array
-    const reviews = Array.from(state.reviews.values());
+    debug(`Sending ${reviews.length} valid reviews for analysis`);
 
     try {
       const response = await chrome.runtime.sendMessage({
